@@ -54,7 +54,14 @@ Commands use explicit target identities, queued jobs, and read-back verification
 
 ## Repository contents
 
-This initial repository checkpoint contains project documentation only. Application source and reproducible setup instructions will be added in a subsequent source import.
+The application source, tests, operational documentation and planning documents are included:
+
+- `fleet-control/`: React app, API, Playwright worker, tests and launch scripts.
+- `planning/`: original requirements and automation plan.
+
+See [application setup](fleet-control/README.md) and [operations](fleet-control/docs/OPERATIONS.md). On Windows, install Node.js 24, open `fleet-control`, run `npm ci`, then use `Start Fleet Studio.cmd`. Browser automation also requires `npx playwright install chromium`.
+
+This is a development checkpoint. Account names and device IDs have been replaced with placeholders. Configure and verify your own connector before attempting live operations. Private runtime data, uploaded media, login sessions, backups and live-test evidence are excluded. Documentation that refers to local test evidence describes the development session; those private artifacts are not included here.
 
 ## Development priorities
 

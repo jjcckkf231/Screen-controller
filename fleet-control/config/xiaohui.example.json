@@ -1,0 +1,20 @@
+{
+  "origin": "https://www.led-cloud.com",
+  "entryPath": "/#/Rich/DeviceManage",
+  "accountSelector": "REPLACE_WITH_OBSERVED_UNIQUE_ACCOUNT_SELECTOR",
+  "expectedAccount": "REPLACE_WITH_DEDICATED_TEST_ACCOUNT_TEXT",
+  "fleetRead": {
+    "commissioned": false,
+    "revision": "not-yet-recorded",
+    "path": "/#/Rich/DeviceManage",
+    "rowSelector": "REPLACE_WITH_OBSERVED_DEVICE_ROW_SELECTOR",
+    "totalSelector": "REPLACE_WITH_EXACT_INTEGER_TOTAL_SELECTOR",
+    "maxPages": 50,
+    "fields": {
+      "externalId": { "selector": "REPLACE_WITH_OBSERVED_DEVICE_ID_CELL" },
+      "name": { "selector": "REPLACE_WITH_OBSERVED_DEVICE_NAME_CELL" }
+    },
+    "deviceCapabilities": []
+  },
+  "workflows": {}
+}

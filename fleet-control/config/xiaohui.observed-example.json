@@ -1,0 +1,25 @@
+{
+  "origin": "https://www.led-cloud.com",
+  "accountSelector": ".user > span:first-of-type",
+  "expectedAccount": "YOUR_XIAOHUI_ACCOUNT",
+  "entryPath": "/#/Rich/DeviceManage",
+  "fleetRead": {
+    "commissioned": false,
+    "revision": "observed-2026-10-25-v1",
+    "path": "/#/Rich/DeviceManage",
+    "rowSelector": "tr.ivu-table-row",
+    "totalSelector": ".ivu-page-total",
+    "totalFormat": "xiaohui_english",
+    "minimumDeviceCount": 1,
+    "nextPageSelector": ".ivu-page-next:not(.ivu-page-disabled)",
+    "fields": {
+      "externalId": {"selector": "td:nth-child(2) p:nth-child(2) a > span"},
+      "name": {"selector": "td:nth-child(2) div[title]", "attribute": "title"},
+      "width": {"selector": "td:nth-child(3) p:nth-child(1) span:nth-child(2)", "format": "resolution_width"},
+      "height": {"selector": "td:nth-child(3) p:nth-child(1) span:nth-child(2)", "format": "resolution_height"},
+      "firmware": {"selector": "td:nth-child(3) p:nth-child(2) span:nth-child(2)"}
+    },
+    "deviceCapabilities": []
+  },
+  "workflows": {}
+}

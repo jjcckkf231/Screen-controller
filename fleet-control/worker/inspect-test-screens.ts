@@ -1,0 +1,33 @@
+import { chromium } from "playwright";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { decryptJson, localSecret, encryptJson } from "../server/secrets.ts";
+import { restoreXiaohuiSession, captureXiaohuiSession, type SavedBrowserState } from "./browser-session.ts";
+const state = decryptJson<SavedBrowserState>(await readFile(".data/xiaohui-auth.enc", "utf8"), await localSecret(".data", "auth-key"));
+const browser = await chromium.launch({headless:true});
+try {
+  const context = await browser.newContext({storageState:state});
+  await restoreXiaohuiSession(context,state);
+  const page = await context.newPage();
+  await page.goto("https://www.led-cloud.com/#/Rich/DeviceManage");
+  await page.locator(".user > span:first-of-type").waitFor();
+  if ((await page.locator(".user > span:first-of-type").innerText()).trim() !== "YOUR_XIAOHUI_ACCOUNT") throw new Error("Account mismatch");
+  await page.locator("tr.ivu-table-row").first().waitFor();
+  const rows = page.locator("tr.ivu-table-row");
+  const s1 = rows.filter({has: page.locator('div[title="S1"]')});
+  if (await s1.count() !== 1) throw new Error("S1 not unique");
+  await s1.getByText("Details",{exact:true}).click();
+  await page.locator("#pane-otherData").waitFor();
+  await page.locator("#pane-otherData").getByText("EXAMPLE-DEVICE-ID", {exact:true}).waitFor();
+  await mkdir(".data/connection-check",{recursive:true});
+  await writeFile(".data/connection-check/s1-details.html", await page.locator("#pane-otherData").innerHTML());
+  console.log((await page.locator("#pane-otherData").innerText()).split("Network Information")[0]);
+  await page.locator("#pane-otherData").getByRole("button",{name:"More",exact:false}).click();
+  const volume = page.locator(".el-dropdown-menu, .ivu-dropdown-menu").getByText("Volume",{exact:true}).filter({visible:true});
+  await volume.click();
+  const dialog = page.locator('[role="dialog"]:visible');
+  await dialog.waitFor();
+  await dialog.locator(".ivu-spin:visible").waitFor({state:"hidden"});
+  console.log("VOLUME FORM", await dialog.innerText());
+  console.log("CONTROLS", await dialog.locator("input:visible, .ivu-slider-button:visible").evaluateAll(es=>es.map(e=>e.outerHTML)));
+  await writeFile(".data/xiaohui-auth.enc",encryptJson(await captureXiaohuiSession(context),await localSecret(".data","auth-key")),{mode:0o600});
+} finally {await browser.close();}
