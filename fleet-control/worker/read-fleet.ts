@@ -5,7 +5,7 @@ import { powerScheduleSchema, idSchema, nameSchema } from "../shared/domain.ts";
 import type { ConnectorConfig } from "./config.ts";
 import type { Progress } from "./types.ts";
 import { totalCount, fieldValue } from "./field-format.ts";
-import { readDevice } from "./xiaohui-device.ts";
+import { readDevice, AccountMismatchError } from "./xiaohui-device.ts";
 const stableId = (kind: string, value: string) =>
   `xh-${kind}-${createHash("sha256").update(value).digest("hex").slice(0, 24)}`;
 export async function readFleet(
@@ -29,14 +29,19 @@ export async function readFleet(
     throw new Error("Account identity failed before fleet read.");
   const total = page.locator(mapping.totalSelector);
   await total.waitFor({ state: "visible" });
-  await page.locator(".ivu-table .ivu-spin-fix").waitFor({state: "hidden"});
+  await page.locator(".ivu-table .ivu-spin-fix").waitFor({ state: "hidden" });
   if (mapping.minimumDeviceCount > 0)
-    await page.locator(mapping.rowSelector).first().waitFor({state: "visible"});
+    await page
+      .locator(mapping.rowSelector)
+      .first()
+      .waitFor({ state: "visible" });
   if ((await total.count()) !== 1)
     throw new Error("Expected exactly one fleet total counter.");
   const expected = totalCount(await total.innerText(), mapping.totalFormat);
   if (expected < mapping.minimumDeviceCount)
-    throw new Error("Fleet total is below the configured minimum; previous state is preserved.");
+    throw new Error(
+      "Fleet total is below the configured minimum; previous state is preserved.",
+    );
   if (expected > 500)
     throw new Error("This workspace is limited to 500 imported screens.");
   const devices: Device[] = [],
@@ -52,7 +57,8 @@ export async function readFleet(
       (field.attribute
         ? await node.getAttribute(field.attribute)
         : await node.innerText()
-      )?.trim() ?? null, field.format
+      )?.trim() ?? null,
+      field.format,
     );
   };
   const number = (value: string | null, min: number, max: number) => {
@@ -168,13 +174,35 @@ export async function readFleet(
     throw new Error(
       "Incomplete fleet read. Previous cached state is preserved.",
     );
-  for (const device of devices.filter(d=>config.detailDeviceIds.includes(d.externalId))) {
-    await progress("reading",`Reading verified detail fields for ${device.name}.`);
-    const details=await readDevice(page,device.externalId);
-    device.online=details.online === "Online" ? true : details.online === "Offline" ? false : null;
-    device.settings.volume=details.volume;
-    device.settings.observedAt=details.observedAt;
-    if(config.nativeVolume?.commissioned && config.nativeVolume.deviceIds.includes(device.externalId)) device.capabilities=[...new Set([...device.capabilities,"volume"])];
+  for (const device of devices) {
+    await progress(
+      "reading",
+      `Reading verified detail fields for ${device.name}.`,
+    );
+    try {
+      const details = await readDevice(page, device.externalId, config);
+      device.online =
+        details.online === "Online"
+          ? true
+          : details.online === "Offline"
+            ? false
+            : null;
+      device.settings.volume = details.volume;
+      device.settings.observedAt = details.observedAt;
+    } catch (error) {
+      if (error instanceof AccountMismatchError) throw error;
+      device.online = null;
+      device.settings.observedAt = null;
+      await progress(
+        "reading",
+        `Could not read status for ${device.name}; left Unknown.`,
+      );
+    }
+    if (
+      config.nativeVolume?.commissioned &&
+      config.nativeVolume.deviceIds.includes(device.externalId)
+    )
+      device.capabilities = [...new Set([...device.capabilities, "volume"])];
   }
   return { devices, groups: [...groups.values()] };
 }

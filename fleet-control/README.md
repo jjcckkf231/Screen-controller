@@ -1,5 +1,7 @@
 # Fleet Studio
 
+**Online-status update:** Sync reads the status of every discovered cloud device automatically. Existing `detailDeviceIds` lists no longer restrict reading, and account identity comes from connector configuration. See [updating another computer](docs/AUTOMATIC-STATUS.md). Write permissions remain separate and unchanged.
+
 A runnable Thai/English workspace for screen fleets, with a compact editor inspired by Figma’s panel layout. This is a new application—not the discarded mockup and not a skin injected into Xiaohui.
 
 **Current release: local acceptance build. Real Xiaohui / physical-screen acceptance is still pending.**
@@ -63,8 +65,8 @@ npm start
 Run `npm run worker` in a second terminal. Open port 4178. For hot frontend development, run `npx vite` separately and use port 5173; set `PUBLIC_ORIGIN=http://127.0.0.1:5173` for API write-origin checks during that development session.
 
 ```powershell
-npm test
 npx playwright install chromium
+npm test
 npm run test:browser
 npm audit
 ```

@@ -73,7 +73,9 @@ const workflowSchema = z
 const readField = z.object({
   selector: z.string().min(1).max(1000),
   attribute: z.string().max(80).optional(),
-  format: z.enum(["text", "resolution_width", "resolution_height"]).default("text"),
+  format: z
+    .enum(["text", "resolution_width", "resolution_height"])
+    .default("text"),
 });
 export const fleetReadSchema = z.object({
   commissioned: z.boolean().default(false),
@@ -121,8 +123,15 @@ export const fleetReadSchema = z.object({
     .default([]),
 });
 export const connectorConfigSchema = z.object({
-  nativeVolume: z.object({commissioned:z.boolean().default(false), revision:z.string().min(1), deviceIds:z.array(z.string().min(1)).max(5)}).optional(),
-  detailDeviceIds: z.array(z.string().min(1)).max(5).default([]),
+  nativeVolume: z
+    .object({
+      commissioned: z.boolean().default(false),
+      revision: z.string().min(1),
+      deviceIds: z.array(z.string().min(1)).max(5),
+    })
+    .optional(),
+  // Accepted for old configuration files; fleet status reads now include every discovered device.
+  detailDeviceIds: z.array(z.string().min(1)).max(500).default([]),
   origin: z.literal("https://www.led-cloud.com"),
   accountSelector: z.string().min(1).max(1000),
   expectedAccount: z.string().min(1).max(200),

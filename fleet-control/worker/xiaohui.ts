@@ -142,7 +142,7 @@ export async function executeXiaohui(
         const device=work.devices.find(d=>d.id===id)!;
         await progress("working",`Setting volume for ${device.name}; checking reported value after reload.`);
         try {
-          const report=await setVolume(page,device.externalId,Number(work.job.payload.value));
+          const report=await setVolume(page,device.externalId,Number(work.job.payload.value),config);
           updated.push({...device,online:true,settings:{...device.settings,volume:report.volume,observedAt:report.observedAt,source:"xiaohui-cloud-ui"}});
           outcome.results.push({id,state:"succeeded",message:"Volume verified in fresh cloud device report. Physical audio not independently confirmed."});
         } catch(error) {
